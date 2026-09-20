@@ -28,6 +28,17 @@ When this command is triggered:
    - **Pre-flight Dependencies:** [Required environment variables, services, or ports]
    ```
 
-4. **Awaiting Confirmation:**
-   - Output: `"Would you like me to proceed with executing this specification?"`
-   - Halt execution and await explicit user confirmation (`yes`, `run`, `proceed`) before performing any edits.
+4. **Awaiting Contract Approval:**
+   - Output: `"Would you like me to generate the implementation plan for this specification?"`
+   - Halt execution and await explicit user confirmation (`yes`, `run`, `proceed`).
+
+5. **Interactive Planning Phase (Upon Approval):**
+   - Create or update the `implementation_plan.md` artifact (`UserFacing: true, RequestFeedback: true`).
+   - Present the plan artifact for user review without modifying source files.
+   - Output: `"Please review the implementation plan. Reply with 'continue' or 'proceed' to execute, or describe any changes you would like to make."`
+   - Halt execution until explicit continuation prompt is received.
+
+6. **Bounded Execution & Verification:**
+   - Apply edits strictly as defined in the approved plan.
+   - Run the verification gate command.
+   - Document results in a `walkthrough.md` artifact.
