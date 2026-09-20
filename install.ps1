@@ -19,6 +19,23 @@ Write-Host "===========================================" -ForegroundColor Cyan
 $BaseUrl = "https://raw.githubusercontent.com/cluelessbaj/antigravity-refine/main"
 $ScriptDir = $PSScriptRoot
 
+function Repair-ConfigFile {
+    param([string]$ConfigFile)
+    if (Test-Path $ConfigFile) {
+        try {
+            $bytes = [System.IO.File]::ReadAllBytes($ConfigFile)
+            # Detect and strip UTF-8 BOM (0xEF, 0xBB, 0xBF) which breaks Go's protobuf parser
+            if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+                $cleanBytes = $bytes[3..($bytes.Length - 1)]
+                [System.IO.File]::WriteAllBytes($ConfigFile, $cleanBytes)
+                Write-Host "[✓] Repaired config.json: Stripped UTF-8 BOM" -ForegroundColor Green
+            }
+        } catch {
+            Write-Host "[!] Note: Could not check BOM on config.json: $_" -ForegroundColor Yellow
+        }
+    }
+}
+
 function Install-Workspace {
     $TargetDir = Get-Location
     Write-Host "`n[*] Installing to workspace: $TargetDir" -ForegroundColor Yellow
@@ -91,23 +108,9 @@ function Install-Global {
         Invoke-RestMethod "$BaseUrl/rules/AGENTS.md" -OutFile (Join-Path $GlobalRulesDir "refine.md")
     }
 
-    # Automatically enable in config.json if present
+    # Ensure config.json has no BOM if it was previously touched
     $ConfigFile = Join-Path $ConfigDir "config.json"
-    if (Test-Path $ConfigFile) {
-        try {
-            $JsonContent = Get-Content $ConfigFile -Raw | ConvertFrom-Json
-            if (-not $JsonContent.plugins) {
-                $JsonContent | Add-Member -MemberType NoteProperty -Name "plugins" -Value ([PSCustomObject]@{})
-            }
-            if (-not $JsonContent.plugins.refine) {
-                $JsonContent.plugins | Add-Member -MemberType NoteProperty -Name "refine" -Value ([PSCustomObject]@{ enabled = $true })
-                $JsonContent | ConvertTo-Json -Depth 20 | Set-Content $ConfigFile -Encoding UTF8
-                Write-Host "[✓] Enabled 'refine' in $ConfigFile" -ForegroundColor Green
-            }
-        } catch {
-            Write-Host "[!] Note: Could not auto-edit config.json. Make sure 'refine' is enabled in settings." -ForegroundColor Yellow
-        }
-    }
+    Repair-ConfigFile -ConfigFile $ConfigFile
 
     Write-Host "[✓] Global installation complete!" -ForegroundColor Green
 }
