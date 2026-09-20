@@ -1,0 +1,16 @@
+{
+  "name": "refine",
+  "version": "1.0.0",
+  "description": "Context-aware task refinement skill and pre-execution contract generator for Google Antigravity",
+  "author": {
+    "name": "deadass@boi"
+  },
+  "license": "MIT",
+  "keywords": [
+    "antigravity",
+    "skills",
+    "refine",
+    "agentic",
+    "pair-programming"
+  ]
+}
