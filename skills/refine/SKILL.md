@@ -1,12 +1,12 @@
 ---
 name: refine
-description: Intercepts rough task descriptions (/refine <prompt> or refine: <prompt>), inspects repository context, drafts a hardened contract, generates an interactive implementation plan for user review, and executes only after explicit continuation approval.
+description: Intercepts rough task descriptions (/refine <prompt> or refine: <prompt>), inspects repository context, drafts a hardened contract, and offers a flexible choice between immediate bounded execution or generating an interactive implementation plan for review.
 ---
 
-# /refine — Context-Aware Task Refinement & Planning Skill
+# /refine — Context-Aware Task Refinement & Flexible Execution Skill
 
 ## Overview
-The `/refine` skill intercepts ambiguous or rough task requests, grounds them in the concrete reality of the current workspace, and generates a deterministic, project-specific execution contract followed by an interactive **Implementation Plan**. It acts as a multi-stage safety gate to ensure zero premature code modifications occur.
+The `/refine` skill intercepts ambiguous or rough task requests, grounds them in the concrete reality of the current workspace, and generates a deterministic, project-specific execution contract. It acts as a safety gate to ensure zero premature code modifications occur, while offering the user a **choice between immediate bounded execution or an interactive planning review**.
 
 ## Triggers
 Activate this skill whenever user input starts with:
@@ -17,7 +17,7 @@ Activate this skill whenever user input starts with:
 
 ## Mandatory Execution Workflow
 
-When `/refine` is invoked, **DO NOT** execute any code edits or file modifications immediately. Follow this strict three-stage workflow:
+When `/refine` is invoked, **DO NOT** execute any code edits or file modifications immediately. Follow this strict workflow:
 
 ### Stage 1: Contract Refinement & Pre-Execution Hold
 1. **Pre-Execution Hold:**
@@ -44,14 +44,18 @@ When `/refine` is invoked, **DO NOT** execute any code edits or file modificatio
    - **Pre-flight Dependencies:** [Required environment variables, services, or ports]
    ```
 
-4. **Awaiting Contract Approval:**
-   - Prompt: `"Would you like me to generate the implementation plan for this specification?"`
-   - Halt execution and await explicit user confirmation (`yes`, `run`, `proceed`).
+4. **Awaiting User Decision (Execution Choice):**
+   Output the choice prompt:
+   > **How would you like to proceed?**
+   > - **Direct Execution:** Reply `run`, `execute`, or `yes` to apply changes directly bounded by this contract.
+   > - **Interactive Planning:** Reply `plan` to generate a detailed `implementation_plan.md` artifact for review first.
+   > - Or reply with any adjustments you'd like to make to the contract.
+   - Halt execution and await explicit user input.
 
 ---
 
-### Stage 2: Interactive Planning Phase
-Once the user confirms the contract:
+### Stage 2: Interactive Planning Phase (Optional)
+If the user replies `plan`:
 1. **Create Implementation Plan Artifact:**
    - Write or update `implementation_plan.md` in the artifact directory (`UserFacing: true`, `RequestFeedback: true`).
    - Structure the plan with:
@@ -61,16 +65,15 @@ Once the user confirms the contract:
      - **Verification Plan**: Automated test commands and manual verification steps.
 2. **User Inspection & Edits:**
    - Direct the user to review the generated implementation plan artifact.
-   - The user can review, critique, or suggest edits to the plan.
    - Output: `"Please review the implementation plan. Reply with 'continue' or 'proceed' to execute, or describe any changes you would like to make."`
-   - **DO NOT** modify any source code during this stage.
+   - Halt execution until explicit continuation prompt (`continue`, `proceed`, `run`) is received.
 
 ---
 
-### Stage 3: Bounded Plan Execution & Verification
-Only when the user provides explicit continuation approval (`continue`, `proceed`, `run`, `execute`):
+### Stage 3: Bounded Execution & Verification Gate
+Triggered either directly from Stage 1 (`run` / `execute` / `yes`) or after Stage 2 approval (`continue` / `proceed`):
 1. **Execute Changes:**
-   - Perform code modifications strictly bounded by the approved implementation plan.
+   - Perform code modifications strictly bounded by the agreed contract or plan.
 2. **Run Test Gate:**
    - Execute the verification command defined in the contract.
    - Ensure exit code 0 and zero test failures.

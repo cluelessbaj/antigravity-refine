@@ -1,9 +1,11 @@
-# 🎯 /refine — Context-Aware Task Refinement & Planning Skill for Google Antigravity
+# 🎯 /refine — Context-Aware Task Refinement & Flexible Execution Skill for Google Antigravity
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform: Antigravity](https://img.shields.io/badge/Platform-Google%20Antigravity-4285F4.svg)](https://antigravity.google)
 
-A native skill and instruction hook for **Google Antigravity (AGY)** that intercepts rough, high-level task requests, inspects the concrete repository context—discovering exact file paths, test runners, build systems, and git status—and drafts a **hardened, deterministic execution contract** followed by an **interactive implementation plan** before touching a single line of code.
+A native skill and instruction hook for **Google Antigravity (AGY)** that intercepts rough, high-level task requests, inspects the concrete repository context—discovering exact file paths, test runners, build systems, and git status—and drafts a **hardened, deterministic execution contract**.
+
+It gives you full control over how to proceed: choose **Direct Execution** for quick, verified implementations, or enter **Interactive Planning Mode** to review and adjust a detailed architectural plan before any code is modified.
 
 ---
 
@@ -11,30 +13,30 @@ A native skill and instruction hook for **Google Antigravity (AGY)** that interc
 
 | The Typical Failure Mode | The `/refine` Workflow |
 | :--- | :--- |
-| Agent immediately jumps into editing random files based on vague prompts | **Pre-execution Hold**: Zero code edits until scope and plan are agreed upon |
+| Agent immediately jumps into editing random files based on vague prompts | **Pre-execution Hold**: Zero code edits until scope is agreed upon |
 | Hallucinates generic paths (`src/app.py`, `server.go`) | **Context Inspection**: Scans real workspace files, routers, and modules |
 | Guesses testing commands or skips verification | **Tooling & Test Gate**: Discovers project-specific test runners (`go test ./...`, `pytest`, `npm test`, `make test`) |
-| Silent, unreviewed architecture decisions | **Interactive Planning Mode**: Generates an editable `implementation_plan.md` artifact before execution |
-| Unbounded scope creep | **Bounded Execution**: Modifies only what is explicitly approved in the plan |
+| Rigid workflows that force planning on tiny tasks | **Flexible Execution Choice**: Choose between direct execution or interactive planning |
+| Unbounded scope creep | **Bounded Execution**: Modifies only what is explicitly approved in the contract or plan |
 
 ---
 
-## 🚀 Two-Stage Guardrail Architecture
+## 🚀 Flexible Execution Architecture
 
 When triggered with `/refine <prompt>` or `refine: <prompt>`:
 
 ```mermaid
 flowchart TD
-    A["User triggers /refine <prompt>"] --> B["Pre-Execution Hold (Zero Edits)"]
-    B --> C["Context Inspection\n- Target files & modules\n- Test runners & linters\n- Git & dependency status"]
-    C --> D["Generate Hardened Task Contract"]
-    D --> E["Prompt: 'Generate implementation plan?'"]
-    E -->|User confirms 'yes'| F["Stage 2: Generate implementation_plan.md Artifact"]
-    F --> G["User Reviews & Edits Plan Artifact"]
+    A["User triggers /refine <prompt>"] --> B["Stage 1: Pre-Execution Hold & Context Inspection"]
+    B --> C["Output Hardened Task Contract"]
+    C --> D{"User Execution Choice"}
+    D -->|"'run' / 'execute' / 'yes'"| E["Stage 3: Direct Bounded Execution"]
+    D -->|"'plan'"| F["Stage 2: Generate implementation_plan.md Artifact"]
+    F --> G["User Reviews & Edits Plan Document"]
     G --> H["Prompt: 'Reply with continue to execute'"]
-    H -->|User confirms 'continue'| I["Stage 3: Execute Changes Bounded by Plan"]
-    I --> J["Verification Gate (Run Tests)"]
-    J --> K["Generate walkthrough.md Artifact"]
+    H -->|"'continue'"| E
+    E --> I["Verification Gate (Run Tests)"]
+    I --> J["Generate walkthrough.md Artifact"]
 ```
 
 ---
@@ -57,11 +59,17 @@ Every refined task produces this deterministic contract for initial alignment:
 - **Pre-flight Dependencies:** [Required environment variables, services, or ports]
 ```
 
+#### Awaiting Your Decision:
+> **How would you like to proceed?**
+> - **Direct Execution:** Reply `run`, `execute`, or `yes` to apply changes directly bounded by this contract.
+> - **Interactive Planning:** Reply `plan` to generate a detailed `implementation_plan.md` artifact for review first.
+> - Or reply with any adjustments you'd like to make to the contract.
+
 ---
 
-### 📝 Stage 2: Interactive Planning Phase
+### 📝 Stage 2: Interactive Planning Phase (Optional)
 
-Once the contract is confirmed, `/refine` creates a dedicated `implementation_plan.md` artifact:
+If you reply with `plan`, `/refine` creates a dedicated `implementation_plan.md` artifact:
 - **Component-by-Component Breakdown**: Every file change is designated as `[MODIFY]`, `[NEW]`, or `[DELETE]`.
 - **Review Items & Open Questions**: Highlights breaking changes or architectural trade-offs.
 - **Editable & Collaborative**: You can edit the plan document directly in Antigravity or ask the agent to tweak specific parts.
@@ -132,44 +140,6 @@ refine: implement redis caching for user profiles
 > [!NOTE]
 > **Client-Side Autocomplete Notice**: 
 > Antigravity's chat UI has a client-side autocomplete menu for built-in platform shortcuts (`/goal`, `/schedule`, `/browser`, etc.). When typing `/refine`, the menu may say *"No matching results"*. **This is expected and does not block you.** Simply finish typing your prompt and press **Enter** (or press <kbd>Esc</kbd> to dismiss the popover). The agent will immediately intercept the command and run the contract workflow.
-
----
-
-## 🔍 Example End-to-End Walkthrough
-
-1. **User Request:**
-   ```text
-   /refine add a health check endpoint
-   ```
-
-2. **Agent Contract Output:**
-   > ```markdown
-   > ## Refined Task Contract: Add Health Check Endpoint to HTTP Server
-   > 
-   > - **Target End-State:** Expose GET /health returning {"status": "ok"}.
-   > - **Target Files:**
-   >   - Modify: `server.py`
-   > - **Tooling & Test Gate:**
-   >   - Verification command: `python3 -m py_compile server.py`
-   > ```
-   > *"Would you like me to generate the implementation plan for this specification?"*
-
-3. **User:**
-   ```text
-   yes
-   ```
-
-4. **Agent Interactive Plan Generation:**
-   > Creates `implementation_plan.md` artifact outlining architecture, exact file changes, and verification commands.
-   > *"Please review the implementation plan. Reply with 'continue' or 'proceed' to execute, or describe any changes you would like to make."*
-
-5. **User:**
-   ```text
-   continue
-   ```
-
-6. **Agent Bounded Execution & Verification:**
-   > Executes code changes, runs the verification command, and produces `walkthrough.md`.
 
 ---
 
