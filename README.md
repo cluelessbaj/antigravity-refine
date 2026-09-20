@@ -1,11 +1,11 @@
 # 🎯 /refine — Context-Aware Task Refinement & Flexible Execution Skill for Google Antigravity
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform: Antigravity](https://img.shields.io/badge/Platform-Google%20Antigravity-4285F4.svg)](https://antigravity.google)
+[![Platform: Cross-Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-4285F4.svg)](https://antigravity.google)
 
 A native skill and instruction hook for **Google Antigravity (AGY)** that intercepts rough, high-level task requests, inspects the concrete repository context—discovering exact file paths, test runners, build systems, and git status—and drafts a **hardened, deterministic execution contract**.
 
-It gives you full control over how to proceed: choose **Direct Execution** for quick, verified implementations, or enter **Interactive Planning Mode** to review and adjust a detailed architectural plan before any code is modified.
+Works seamlessly on **Linux**, **macOS**, and **Windows** with full support for PowerShell, Bash, and native OS path conventions with **zero path conflicts**.
 
 ---
 
@@ -15,7 +15,8 @@ It gives you full control over how to proceed: choose **Direct Execution** for q
 | :--- | :--- |
 | Agent immediately jumps into editing random files based on vague prompts | **Pre-execution Hold**: Zero code edits until scope is agreed upon |
 | Hallucinates generic paths (`src/app.py`, `server.go`) | **Context Inspection**: Scans real workspace files, routers, and modules |
-| Guesses testing commands or skips verification | **Tooling & Test Gate**: Discovers project-specific test runners (`go test ./...`, `pytest`, `npm test`, `make test`) |
+| Guesses testing commands or skips verification | **Tooling & Test Gate**: Discovers project-specific test runners (`go test`, `pytest`, `npm test`, `dotnet test`, `make test`) |
+| Path mismatches between Unix and Windows | **Cross-Platform Path Normalization**: Detects host OS and formats paths canonically with zero conflicts |
 | Rigid workflows that force planning on tiny tasks | **Flexible Execution Choice**: Choose between direct execution or interactive planning |
 | Unbounded scope creep | **Bounded Execution**: Modifies only what is explicitly approved in the contract or plan |
 
@@ -28,7 +29,7 @@ When triggered with `/refine <prompt>` or `refine: <prompt>`:
 ```mermaid
 flowchart TD
     A["User triggers /refine <prompt>"] --> B["Stage 1: Pre-Execution Hold & Context Inspection"]
-    B --> C["Output Hardened Task Contract"]
+    B --> C["Detect Host OS & Output Hardened Task Contract"]
     C --> D{"User Execution Choice"}
     D -->|"'run' / 'execute' / 'yes'"| E["Stage 3: Direct Bounded Execution"]
     D -->|"'plan'"| F["Stage 2: Generate implementation_plan.md Artifact"]
@@ -41,52 +42,26 @@ flowchart TD
 
 ---
 
-### 📋 Stage 1: The Hardened Contract Template
-
-Every refined task produces this deterministic contract for initial alignment:
-
-```markdown
-## Refined Task Contract: [Concise Feature/Fix Name]
-
-- **Target End-State:** [Measurable deliverable tailored to this repo]
-- **Target Files:**
-  - Modify: `[explicit paths to existing files]`
-  - Create: `[explicit paths if new files are needed]`
-  - Read-Only / Untouchable: `[configs, locks, dependencies, unrelated modules]`
-- **Tooling & Test Gate:**
-  - Verification command: `[exact test/lint command found in the project]`
-  - Expected result: Exit code 0, 0 test failures.
-- **Pre-flight Dependencies:** [Required environment variables, services, or ports]
-```
-
-#### Awaiting Your Decision:
-> **How would you like to proceed?**
-> - **Direct Execution:** Reply `run`, `execute`, or `yes` to apply changes directly bounded by this contract.
-> - **Interactive Planning:** Reply `plan` to generate a detailed `implementation_plan.md` artifact for review first.
-> - Or reply with any adjustments you'd like to make to the contract.
-
----
-
-### 📝 Stage 2: Interactive Planning Phase (Optional)
-
-If you reply with `plan`, `/refine` creates a dedicated `implementation_plan.md` artifact:
-- **Component-by-Component Breakdown**: Every file change is designated as `[MODIFY]`, `[NEW]`, or `[DELETE]`.
-- **Review Items & Open Questions**: Highlights breaking changes or architectural trade-offs.
-- **Editable & Collaborative**: You can edit the plan document directly in Antigravity or ask the agent to tweak specific parts.
-- **Continuation Gate**: Code execution only begins when you respond with `continue`, `proceed`, or `run`.
-
----
-
 ## 📦 Installation
 
 ### Option 1: Quick Install (One-Liner)
 
-Install to your current project workspace:
+#### 🪟 Windows (PowerShell)
+Open PowerShell and run:
+```powershell
+irm https://raw.githubusercontent.com/cluelessbaj/antigravity-refine/main/install.ps1 | iex
+```
+*To install globally for all Windows projects:*
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/cluelessbaj/antigravity-refine/main/install.ps1))) -Mode global
+```
+
+#### 🐧 Linux & 🍎 macOS (Bash / Zsh)
+Open terminal and run:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cluelessbaj/antigravity-refine/main/install.sh | bash
 ```
-
-Or install globally across all Antigravity projects:
+*To install globally across all Unix projects:*
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cluelessbaj/antigravity-refine/main/install.sh | bash -s -- global
 ```
@@ -97,6 +72,17 @@ curl -fsSL https://raw.githubusercontent.com/cluelessbaj/antigravity-refine/main
 
 #### Per-Workspace Setup
 Copy the files into your repository root:
+
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType Directory -Force -Path .agents\skills\refine, .antigravity\skills
+Copy-Item skills\refine\SKILL.md .agents\skills\refine\SKILL.md
+Copy-Item .antigravity\skills\refine.md .antigravity\skills\refine.md
+Copy-Item rules\AGENTS.md .\AGENTS.md
+Copy-Item rules\GEMINI.md .\GEMINI.md
+```
+
+**Linux / macOS (Bash):**
 ```bash
 mkdir -p .agents/skills/refine .antigravity/skills
 cp skills/refine/SKILL.md .agents/skills/refine/SKILL.md
@@ -106,13 +92,12 @@ cp rules/GEMINI.md ./GEMINI.md
 ```
 
 #### Global Setup (Antigravity Plugin)
-To enable `/refine` for every workspace on your machine:
+To enable `/refine` machine-wide across all workspaces:
 
-1. Clone or copy this repository into `~/.gemini/config/plugins/refine/`:
-   ```bash
-   git clone https://github.com/cluelessbaj/antigravity-refine.git ~/.gemini/config/plugins/refine
-   ```
-2. Enable it in `~/.gemini/config/config.json`:
+1. Clone or copy this repository into your Antigravity plugin folder:
+   - **Windows:** `git clone https://github.com/cluelessbaj/antigravity-refine.git $env:USERPROFILE\.gemini\config\plugins\refine`
+   - **Linux/macOS:** `git clone https://github.com/cluelessbaj/antigravity-refine.git ~/.gemini/config/plugins/refine`
+2. Enable it in your `config.json` (`%USERPROFILE%\.gemini\config\config.json` or `~/.gemini/config/config.json`):
    ```json
    {
      "plugins": {
@@ -122,6 +107,37 @@ To enable `/refine` for every workspace on your machine:
      }
    }
    ```
+
+---
+
+## 🗺️ Cross-Platform Windows & Unix Path Matrix
+
+Antigravity operates across multiple discovery layers. Here is the verified canonical path mapping:
+
+| Surface / Scope | Linux / macOS Path | Windows Path |
+| :--- | :--- | :--- |
+| **Workspace Skill (Standard)** | `<root>/.agents/skills/refine/SKILL.md` | `<root>\.agents\skills\refine\SKILL.md` |
+| **Workspace Skill (Native)** | `<root>/.antigravity/skills/refine.md` | `<root>\.antigravity\skills\refine.md` |
+| **Workspace Rules** | `<root>/AGENTS.md`, `<root>/GEMINI.md` | `<root>\AGENTS.md`, `<root>\GEMINI.md` |
+| **Global Plugin Directory** | `~/.gemini/config/plugins/refine/` | `%USERPROFILE%\.gemini\config\plugins\refine\` |
+| **Global Plugin Manifest** | `~/.gemini/config/plugins/refine/plugin.json` | `%USERPROFILE%\.gemini\config\plugins\refine\plugin.json` |
+| **Global Config File** | `~/.gemini/config/config.json` | `%USERPROFILE%\.gemini\config\config.json` |
+| **Global Standalone Skill** | `~/.gemini/config/skills/refine/SKILL.md` | `%USERPROFILE%\.gemini\config\skills\refine\SKILL.md` |
+| **App Builtin Skills** | `~/.gemini/antigravity/builtin/skills/refine/` | `%USERPROFILE%\.gemini\antigravity\builtin\skills\refine\` |
+| **Global Runtime Rules** | `~/.gemini/antigravity/rules/refine.md` | `%USERPROFILE%\.gemini\antigravity\rules\refine.md` |
+
+---
+
+## 🛡️ Path Conflicts & Deduplication FAQ
+
+#### Q: Will having both `AGENTS.md` and `GEMINI.md` cause duplicate prompt instructions?
+**No.** Antigravity uses internal canonical content deduplication. Even if both `AGENTS.md` and `GEMINI.md` are discovered in the same directory, rules are deduplicated by their resolved identity so instructions are never injected more than once in a turn.
+
+#### Q: What if a path has forward slashes (`/`) vs backslashes (`\`) on Windows?
+**No conflicts.** The Antigravity language server (Go `filepath.Clean`) and desktop Electron runtime (Node `path.normalize`) automatically normalize path separators. Both `C:\project\server.py` and `C:/project/server.py` resolve to the exact same canonical file.
+
+#### Q: How does Antigravity find the user profile on Windows?
+Antigravity queries the Windows environment via standard APIs (`os.UserHomeDir()` in Go, `os.homedir()` in Node), which directly resolves to `%USERPROFILE%` (e.g. `C:\Users\YourName`).
 
 ---
 

@@ -7,9 +7,10 @@ Intercept any user input beginning with `/refine <prompt>` or `refine: <prompt>`
 When this command is triggered:
 1. **Pre-execution Hold (Strict Zero Modifications):**
    - Under no circumstances make code modifications, create new files, or apply edits immediately.
-2. **Context Inspection:**
+2. **Context Inspection & Host OS Detection:**
    - Scan the codebase to identify exact relevant files, modules, and directory structures.
-   - Detect the configured test runners, linters, and build tools (e.g. `Makefile`, `package.json`, `go test ./...`, `pytest`, `python3 -m unittest`, etc.).
+   - Adapt path formatting to the host OS (`\` on Windows, `/` on Unix).
+   - Detect the configured test runners, linters, and build tools (e.g. `Makefile`, `package.json`, `go test ./...`, `pytest`, `dotnet test`, `mvn.cmd`, etc.).
    - Check workspace status and identify read-only or untouchable files (e.g., config, dependencies, lock files).
 3. **Hardened Contract Output:**
    - Output the deterministic contract matching this exact structure:

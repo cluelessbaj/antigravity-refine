@@ -1,6 +1,6 @@
 ---
 name: refine
-description: Intercepts rough task descriptions (/refine <prompt> or refine: <prompt>), inspects repository context, drafts a hardened contract, and offers a flexible choice between immediate bounded execution or generating an interactive implementation plan for review.
+description: Intercepts rough task descriptions (/refine <prompt> or refine: <prompt>), inspects repository context, drafts a hardened contract, and offers a flexible choice between immediate bounded execution or generating an interactive implementation plan for review. Fully cross-platform across Linux, macOS, and Windows.
 ---
 
 # /refine — Context-Aware Task Refinement & Flexible Execution Skill
@@ -22,10 +22,16 @@ When `/refine` is invoked, **DO NOT** execute any code edits or file modificatio
 ### Stage 1: Contract Refinement & Pre-Execution Hold
 1. **Pre-Execution Hold:**
    - Strictly prohibit any immediate code modifications, file creation, or destructive terminal commands.
-2. **Context Inspection:**
+2. **Context Inspection & Host OS Detection:**
+   - Detect host operating system (Linux, macOS, or Windows).
    - Scan the codebase using `find_by_name`, `grep_search`, `list_dir`, and `view_file`.
    - Locate the exact files, modules, and directories directly relevant to the user's rough goal.
-   - Detect active build tools, package scripts, and test runners (e.g., `go test ./...`, `pytest`, `npm test`, `cargo test`, `Makefile`).
+   - **Cross-Platform Path Resolution:**
+     - On Windows: Format target paths using native backslashes (`\`) and drive letters if absolute, or relative paths (`dir\file.ext`).
+     - On Linux/macOS: Format target paths using forward slashes (`/`).
+   - **Tooling Discovery:** Detect active build tools and test runners for the platform:
+     - Windows: `dotnet test`, `powershell -Command ...`, `mvn.cmd test`, `.\gradlew.bat test`, `python -m pytest`
+     - Cross-Platform / Unix: `go test ./...`, `pytest`, `npm test`, `cargo test`, `make test`
    - Check git status (`git status -s`) and identify untouchable files (locks, configs, unrelated code).
 3. **Draft Hardened Contract:**
    Output the deterministic specification matching this exact structure:
@@ -35,7 +41,7 @@ When `/refine` is invoked, **DO NOT** execute any code edits or file modificatio
 
    - **Target End-State:** [Measurable deliverable tailored to this repo]
    - **Target Files:**
-     - Modify: `[explicit paths to existing files]`
+     - Modify: `[explicit paths to existing files formatted for host OS]`
      - Create: `[explicit paths if new files are needed]`
      - Read-Only / Untouchable: `[configs, locks, dependencies, unrelated modules]`
    - **Tooling & Test Gate:**

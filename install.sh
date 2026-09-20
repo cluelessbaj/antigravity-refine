@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Antigravity Refine Skill Installer
+# Antigravity Refine Skill Installer (Linux / macOS / Git Bash)
 # Usage:
-#   ./install.sh [workspace|global]
+#   ./install.sh [workspace|global|all]
 #   curl -sSL https://raw.githubusercontent.com/cluelessbaj/antigravity-refine/main/install.sh | bash
 
 MODE="${1:-workspace}"
@@ -13,6 +13,17 @@ echo " Installing /refine skill for Antigravity  "
 echo "==========================================="
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || echo "")"
+
+# Resolve home directory (handling Git Bash / MSYS2 / Windows environments)
+resolve_user_home() {
+    if [ -n "${USERPROFILE:-}" ] && [ ! -d "${HOME}/.gemini" ] && [ -d "${USERPROFILE}/.gemini" ]; then
+        echo "${USERPROFILE}"
+    else
+        echo "${HOME}"
+    fi
+}
+
+TARGET_HOME="$(resolve_user_home)"
 
 install_to_workspace() {
     local target_dir="${PWD}"
@@ -43,8 +54,8 @@ install_to_workspace() {
 }
 
 install_globally() {
-    local config_dir="${HOME}/.gemini/config"
-    local app_dir="${HOME}/.gemini/antigravity"
+    local config_dir="${TARGET_HOME}/.gemini/config"
+    local app_dir="${TARGET_HOME}/.gemini/antigravity"
     echo "Installing globally to: ${config_dir} and ${app_dir}"
 
     mkdir -p "${config_dir}/plugins/refine/skills/refine"
